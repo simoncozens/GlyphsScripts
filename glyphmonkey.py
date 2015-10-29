@@ -3,7 +3,7 @@
 __doc__=""
 import GlyphsApp
 from GlyphsApp import Proxy
-from math import atan2, sqrt
+from math import atan2, sqrt, cos, sin, radians
 
 class GSLineSegment(object):
   def __init__(self, tuple = None, owner = None, idx = 0):
@@ -108,3 +108,57 @@ GlyphsApp.GSPath._segments = GlyphsApp.GSPath.segments
 GlyphsApp.GSPath.segments =  property( lambda self: PathSegmentsProxy(self),
   lambda self, value: self.setSegments_(map(lambda self: self._seg,value))
 )
+
+
+def nodeRotate(self, ox, oy, angle):
+  angle = radians(angle)
+  newX = ox + (self.position.x-ox)*cos(angle) - (self.position.y-oy)*sin(angle)
+  newY = oy + (self.position.x-ox)*sin(angle) + (self.position.y-oy)*cos(angle)
+  self.position = (round(newX,2), round(newY,2))
+
+GlyphsApp.GSNode.rotate = nodeRotate
+
+### additional GSPath methods
+
+def layerCenter(self):
+  bounds = self.parent.bounds
+  ox = bounds.origin.x + bounds.size.width / 2
+  oy = bounds.origin.y + bounds.size.height / 2
+  return (ox, oy)
+
+def pathCenter(self):
+  bounds = self.bounds
+  ox = bounds.origin.x + bounds.size.width / 2
+  oy = bounds.origin.y + bounds.size.height / 2
+  return (ox, oy)
+
+def pathRotate(self, angle=-1, ox=-1, oy=-1):
+  if angle == -1: angle = 180
+  if ox == -1 and oy == -1:
+    if self.parent: # Almost always
+      ox, oy = self.layerCenter()
+    else:
+      ox, oy = self.center()
+
+  for n in self.nodes:
+    n.rotate(ox, oy, angle)
+  return self
+
+def pathDiff(p1, p2):
+  nodes1 = set((n.position.x,n.position.y) for n in p1.nodes)
+  nodes2 = set((n.position.x,n.position.y) for n in p2.nodes)
+  return nodes1 - nodes2
+
+def pathEqual(p1, p2):
+  pd = pathDiff(p1, p2)
+  return len(pd) == 0
+
+GlyphsApp.GSPath.layerCenter = layerCenter
+GlyphsApp.GSPath.center = pathCenter
+GlyphsApp.GSPath.rotate = pathRotate
+GlyphsApp.GSPath.equal = pathEqual
+GlyphsApp.GSPath.diff = pathDiff
+
+# Does p have rotational symmetry?
+#   ox, oy = p.layerCenter()
+#   p.equal(p.copy().rotate(angle=180, ox=ox, oy=oy)
