@@ -105,10 +105,38 @@ class PathSegmentsProxy (Proxy):
     return map(self.__getitem__, range(0,self.__len__()))
 
 GlyphsApp.GSPath._segments = GlyphsApp.GSPath.segments
-GlyphsApp.GSPath.segments =  property( lambda self: PathSegmentsProxy(self),
-  lambda self, value: self.setSegments_(map(lambda self: self._seg,value))
-)
 
+# Unfortunately working with segments doesn't always *work*. So we
+# map a segment list to a node list
+GSNode = GlyphsApp.GSNode
+
+def toNodeList(segments):
+  nodelist = []
+  for i in range(0,len(segments)):
+    s = segments[i]
+    t = GlyphsApp.GSCURVE
+    c = GlyphsApp.GSSMOOTH
+    if type(s) is GSLineSegment:
+      t = GlyphsApp.GSLINE
+    else:
+      s1 = s.handle1()
+      nodelist.append(GSNode((s1.x,s1.y), GlyphsApp.GSOFFCURVE))
+      s2 = s.handle2()
+      nodelist.append(GSNode((s2.x,s2.y), GlyphsApp.GSOFFCURVE))
+
+    ns = i+1
+    if ns >= len(segments): ns = 0
+    if type(segments[ns]) is GSLineSegment:
+      c = GlyphsApp.GSSHARP
+    e = s.end()
+    node = GSNode((e.x, e.y), t)
+    node.connection = c
+    nodelist.append(node)
+  return nodelist
+
+GlyphsApp.GSPath.segments =  property( lambda self: PathSegmentsProxy(self),
+  lambda self, value: self.setNodes_(toNodeList(value))
+)
 
 def nodeRotate(self, ox, oy, angle):
   angle = radians(angle)
@@ -161,4 +189,4 @@ GlyphsApp.GSPath.diff = pathDiff
 
 # Does p have rotational symmetry?
 #   ox, oy = p.layerCenter()
-#   p.equal(p.copy().rotate(angle=180, ox=ox, oy=oy)
+#   p.equal(p.copy().rotate(angle=180, ox=ox, oy=oy))
