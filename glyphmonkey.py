@@ -17,8 +17,8 @@ class GSLineSegment(object):
     return "<GSSegment (%s, %s)--(%s, %s)>" % (self.start().x,self.start().y,self.end().x,self.end().y)
 
   def _seg(self): return self._seg
-  def start(self): return self._seg[0]
-  def end(self): return self._seg[-1]
+  def start(self): return self._seg[0].position
+  def end(self): return self._seg[-1].position
 
   def area(self):
     xa, ya = self.start().x, self.start().y/20
@@ -45,8 +45,8 @@ class GSCurveSegment(GSLineSegment):
       self.end().x,self.end().y
     )
 
-  def handle1(self): return self._seg[1]
-  def handle2(self): return self._seg[2]
+  def handle1(self): return self._seg[1].position
+  def handle2(self): return self._seg[2].position
 
   def area(self):
     xa, ya = self.start().x, self.start().y/20
@@ -88,23 +88,34 @@ class GSCurveSegment(GSLineSegment):
     return length
 
 class PathSegmentsProxy (Proxy):
+  # Actually we're not going to use .segments at all, because we
+  # want to be able to access things like GSNode.selected
+  def toSegments(p):
+    segList = []
+    nodeList = p._owner.nodes
+    thisSeg = (nodeList[-1],)
+    for i in range(0,len(nodeList)):
+      thisSeg = thisSeg + (nodeList[i],)
+      if nodeList[i].type != GlyphsApp.GSOFFCURVE:
+        segList.append(thisSeg)
+        thisSeg = (nodeList[i],)
+    return segList
   def __getitem__(self, Key):
     if Key < 0:
       Key = self.__len__() + Key
-    if len(self._owner._segments[Key]) == 2:
-      return GSLineSegment( owner = self._owner, idx = Key)
+    segs = self.toSegments()
+    if len(segs[Key]) == 2:
+      return GSLineSegment( owner = self._owner, idx = Key, tuple = segs[Key])
     else:
-      return GSCurveSegment( owner = self._owner, idx = Key)
+      return GSCurveSegment( owner = self._owner, idx = Key, tuple = segs[Key])
   def __setitem__(self, Key, Layer):
     if Key < 0:
       Key = self.__len__() + Key
     # XXX
   def __len__(self):
-    return len(self._owner._segments)
+    return len(self.toSegments())
   def values(self):
     return map(self.__getitem__, range(0,self.__len__()))
-
-GlyphsApp.GSPath._segments = GlyphsApp.GSPath.segments
 
 # Unfortunately working with segments doesn't always *work*. So we
 # map a segment list to a node list
@@ -135,7 +146,8 @@ def toNodeList(segments):
   return nodelist
 
 GlyphsApp.GSPath.segments =  property( lambda self: PathSegmentsProxy(self),
-  lambda self, value: self.setNodes_(toNodeList(value))
+  lambda self, value:
+    self.setNodes_(toNodeList(value))
 )
 
 def nodeRotate(self, ox, oy, angle):
