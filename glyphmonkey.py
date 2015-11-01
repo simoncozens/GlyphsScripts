@@ -4,6 +4,7 @@ __doc__=""
 import GlyphsApp
 from GlyphsApp import Proxy
 from math import atan2, sqrt, cos, sin, radians
+from Foundation import NSMakePoint, NSValue
 
 class GSLineSegment(object):
   def __init__(self, tuple = None, owner = None, idx = 0):
@@ -21,6 +22,15 @@ class GSLineSegment(object):
   def start(self): return self._seg[0].position
   @property
   def end(self): return self._seg[-1].position
+
+  # For backward compatibility
+  def __getitem__(self, Key):
+    if Key < 0:
+      Key = self.__len__() + Key
+    # There is a horribly subtle distinction between an NSValue and
+    # an NSPoint. SpeedPunk expects to see an NSValue here and dies
+    # if it doesn't have one.
+    return NSValue.valueWithPoint_(self._seg[Key].position)
 
   @property
   def area(self):
@@ -45,6 +55,9 @@ class GSLineSegment(object):
   @property
   def selected(self):
     return self.start.selected and self.end.selected
+
+  def __len__(self):
+    return 2
 
 class GSCurveSegment(GSLineSegment):
   def __repr__(self):
@@ -99,6 +112,9 @@ class GSCurveSegment(GSLineSegment):
       t = t + 1.0/steps
       previous = this
     return length
+
+  def __len__(self):
+    return 4
 
 class PathSegmentsProxy (Proxy):
   # Actually we're not going to use .segments at all, because we
