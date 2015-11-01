@@ -14,50 +14,62 @@ class GSLineSegment(object):
 
   def __repr__(self):
     """Return list-lookalike of representation string of objects"""
-    return "<GSSegment (%s, %s)--(%s, %s)>" % (self.start().x,self.start().y,self.end().x,self.end().y)
+    return "<GSSegment (%s, %s)--(%s, %s)>" % (self.start.x,self.start.y,self.end.x,self.end.y)
 
   def _seg(self): return self._seg
+  @property
   def start(self): return self._seg[0].position
+  @property
   def end(self): return self._seg[-1].position
 
+  @property
   def area(self):
-    xa, ya = self.start().x, self.start().y/20
+    xa, ya = self.start.x, self.start.y/20
     xb, yb = xa, ya
-    xc, yc = self.end().x, self.end().y/20
+    xc, yc = self.end.x, self.end.y/20
     xd, yd = xc, yc
     return (xb-xa)*(10*ya + 6*yb + 3*yc +   yd) + (xc-xb)*( 4*ya + 6*yb + 6*yc +  4*yd) +(xd-xc)*(  ya + 3*yb + 6*yc + 10*yd)
 
+  @property
   def length(self):
-    l1 = self.start().x - self.end().x
-    l2 = self.start().y - self.end().y
+    l1 = self.start.x - self.end.x
+    l2 = self.start.y - self.end.y
     return sqrt(l1 * l1 + l2 * l2)
+
+  @property
   def angle(self):
-    e = self.end()
-    s = self.start()
+    e = self.end
+    s = self.start
     return atan2(e.y - s.y, e.x - s.x)
+
+  @property
+  def selected(self):
+    return self.start.selected and self.end.selected
 
 class GSCurveSegment(GSLineSegment):
   def __repr__(self):
     return "<GSSegment (%s, %s)..[%s,%s]..[%s,%s]..(%s, %s)>" % (
-      self.start().x, self.start().y,
-      self.handle1().x, self.handle1().y,
-      self.handle2().x, self.handle2().y,
-      self.end().x,self.end().y
+      self.start.x, self.start.y,
+      self.handle1.x, self.handle1.y,
+      self.handle2.x, self.handle2.y,
+      self.end.x,self.end.y
     )
 
+  @property
   def handle1(self): return self._seg[1].position
+  @property
   def handle2(self): return self._seg[2].position
 
   def area(self):
-    xa, ya = self.start().x, self.start().y/20
-    xb, yb = self.handle1().x, self.handle1().y/20
-    xc, yc = self.handle2().x, self.handle2().y/20
-    xd, yd = self.end().x, self.end().y/20
+    xa, ya = self.start.x, self.start.y/20
+    xb, yb = self.handle1.x, self.handle1.y/20
+    xc, yc = self.handle2.x, self.handle2.y/20
+    xd, yd = self.end.x, self.end.y/20
     return (xb-xa)*(10*ya + 6*yb + 3*yc +   yd) + (xc-xb)*( 4*ya + 6*yb + 6*yc +  4*yd) +(xd-xc)*(  ya + 3*yb + 6*yc + 10*yd)
 
   def angle(self):
-    e = self.end()
-    s = self.start()
+    e = self.end
+    s = self.start
     return atan2(e.y - s.y, e.x - s.x)
 
   def interpolate_at_fraction(self, t):
@@ -68,10 +80,11 @@ class GSCurveSegment(GSLineSegment):
     t1_3a = (3*t)*(t1*t1)
     t1_3b = (3*(t*t))*t1;
     t1_3c = (t * t * t )
-    x = (self.start().x * t1_3) + (t1_3a * self.handle1().x) + (t1_3b * self.handle2().x) + (t1_3c * self.end().x)
-    y = (self.start().y * t1_3) + (t1_3a * self.handle1().y) + (t1_3b * self.handle2().y) + (t1_3c * self.end().y)
+    x = (self.start.x * t1_3) + (t1_3a * self.handle1.x) + (t1_3b * self.handle2.x) + (t1_3c * self.end.x)
+    y = (self.start.y * t1_3) + (t1_3a * self.handle1.y) + (t1_3b * self.handle2.y) + (t1_3c * self.end.y)
     return (x,y)
 
+  @property
   def length(self):
     steps = 50
     t = 0.0
@@ -130,16 +143,16 @@ def toNodeList(segments):
     if type(s) is GSLineSegment:
       t = GlyphsApp.GSLINE
     else:
-      s1 = s.handle1()
+      s1 = s.handle1
       nodelist.append(GSNode((s1.x,s1.y), GlyphsApp.GSOFFCURVE))
-      s2 = s.handle2()
+      s2 = s.handle2
       nodelist.append(GSNode((s2.x,s2.y), GlyphsApp.GSOFFCURVE))
 
     ns = i+1
     if ns >= len(segments): ns = 0
     if type(segments[ns]) is GSLineSegment:
       c = GlyphsApp.GSSHARP
-    e = s.end()
+    e = s.end
     node = GSNode((e.x, e.y), t)
     node.connection = c
     nodelist.append(node)
