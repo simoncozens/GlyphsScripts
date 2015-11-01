@@ -185,7 +185,17 @@ def nodeRotate(self, ox, oy, angle):
   newY = oy + (self.position.x-ox)*sin(angle) + (self.position.y-oy)*cos(angle)
   self.position = (round(newX,2), round(newY,2))
 
+def nodeReflect(self, p0, p1):
+  dx = p1.x - p0.x
+  dy = p1.y - p0.y
+  a = (dx * dx - dy * dy) / (dx * dx + dy * dy)
+  b = 2 * dx * dy / (dx * dx + dy * dy)
+  x = a * (self.position.x - p0.x) + b * (self.position.y - p0.y) + p0.x
+  y = b * (self.position.x - p0.x) - a * (self.position.y - p0.y) + p0.y
+  self.position =(round(x,2), round(y,2))
+
 GlyphsApp.GSNode.rotate = nodeRotate
+GlyphsApp.GSNode.reflect = nodeReflect
 
 ### additional GSPath methods
 
@@ -193,24 +203,38 @@ def layerCenter(self):
   bounds = self.parent.bounds
   ox = bounds.origin.x + bounds.size.width / 2
   oy = bounds.origin.y + bounds.size.height / 2
-  return (ox, oy)
+  return NSMakePoint(ox, oy)
 
 def pathCenter(self):
   bounds = self.bounds
   ox = bounds.origin.x + bounds.size.width / 2
   oy = bounds.origin.y + bounds.size.height / 2
-  return (ox, oy)
+  return NSMakePoint(ox, oy)
 
 def pathRotate(self, angle=-1, ox=-1, oy=-1):
   if angle == -1: angle = 180
   if ox == -1 and oy == -1:
     if self.parent: # Almost always
-      ox, oy = self.layerCenter()
+      ox, oy = self.layerCenter().x, self.layerCenter().y
     else:
-      ox, oy = self.center()
+      ox, oy = self.center().x, self.center().y
 
   for n in self.nodes:
     n.rotate(ox, oy, angle)
+  return self
+
+def pathReflect(self, p0 = -1, p1 = -1):
+  if p0 == -1 and p1 == -1:
+    if self.parent: # Almost always
+      p0 = self.layerCenter()
+      p1 = self.layerCenter()
+    else:
+      p0 = self.center()
+      p1 = self.center()
+    p1.y = p1.y + 100
+
+  for n in self.nodes:
+    n.reflect(p0, p1)
   return self
 
 def pathDiff(p1, p2):
@@ -225,6 +249,7 @@ def pathEqual(p1, p2):
 GlyphsApp.GSPath.layerCenter = layerCenter
 GlyphsApp.GSPath.center = pathCenter
 GlyphsApp.GSPath.rotate = pathRotate
+GlyphsApp.GSPath.reflect = pathReflect
 GlyphsApp.GSPath.equal = pathEqual
 GlyphsApp.GSPath.diff = pathDiff
 
