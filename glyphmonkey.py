@@ -4,7 +4,7 @@ __doc__=""
 import GlyphsApp
 from GlyphsApp import Proxy
 from math import atan2, sqrt, cos, sin, radians
-from Foundation import NSMakePoint, NSValue
+from Foundation import NSMakePoint, NSValue, NSMakeRect
 
 class GSLineSegment(object):
   def __init__(self, tuple = None, owner = None, idx = 0):
@@ -246,12 +246,94 @@ def pathEqual(p1, p2):
   pd = pathDiff(p1, p2)
   return len(pd) == 0
 
+def pathToNodeSet(self):
+  return GSNodeSet(self.nodes)
+
 GlyphsApp.GSPath.layerCenter = layerCenter
 GlyphsApp.GSPath.center = pathCenter
 GlyphsApp.GSPath.rotate = pathRotate
 GlyphsApp.GSPath.reflect = pathReflect
 GlyphsApp.GSPath.equal = pathEqual
 GlyphsApp.GSPath.diff = pathDiff
+GlyphsApp.GSPath.toNodeSet = pathToNodeSet
+
+class GSNodeSet(object):
+  def toKey(self,n):
+    return "%s %s %s" % (n.position.x, n.position.y, n.type)
+
+  def __init__(self, nodes):
+    self._dict = {}
+    for n in nodes:
+      self._dict[self.toKey(n)] = n
+
+  def __repr__(self):
+    return "<GSNodeSet (%s nodes)>" % (len(self))
+
+  def __len__(self):
+    return len(self._dict)
+
+  @property
+  def nodes(self):
+      return self._dict.values()
+
+  @property
+  def bounds(self):
+    minx, maxx, miny, maxy = None, None, None, None
+    if len(self) < 1: return None
+    for p in self.nodes:
+      pos = p.position
+      if minx == None or pos.x < minx: minx = pos.x
+      if maxx == None or pos.x > maxx: maxx = pos.x
+      if miny == None or pos.y < minx: miny = pos.y
+      if maxy == None or pos.y > maxx: maxy = pos.y
+
+    return NSMakeRect(minx, miny, maxx-minx, maxy-miny)
+
+  @property
+  def center(self):
+    if len(self) < 1: return None
+    b = self.bounds
+    return NSMakePoint(b.origin.x + b.size.width / 2, b.origin.y + b.size.height / 2, )
+
+  def copy(self):
+    return GSNodeSet(n.copy() for n in self.nodes)
+
+  def diff(ns1, ns2):
+    nodes1 = set((n.position.x,n.position.y) for n in ns1.nodes)
+    nodes2 = set((n.position.x,n.position.y) for n in ns2.nodes)
+    return nodes1 - nodes2
+
+  def equal(p1, p2):
+    pd = p1.diff(p2)
+    return len(pd) == 0
+
+  def rotate(self, angle=-1, ox=-1, oy=-1):
+    if angle == -1: angle = 180
+    if ox == -1 and oy == -1:
+        ox, oy = self.center.x, self.center.y
+
+    for n in self.nodes:
+      n.rotate(ox, oy, angle)
+    return self
+
+  def reflect(self, p0 = -1, p1 = -1):
+    if p0 == -1 and p1 == -1:
+      p0 = self.center
+      p1 = self.center
+      p1.y = p1.y + 100
+
+    for n in self.nodes:
+      n.reflect(p0, p1)
+    return self
+
+def selectedNodeSet(layer):
+  sel = []
+  for n in layer.selection:
+    if isinstance(n, GSNode):
+      sel.append(n)
+  return GSNodeSet(sel)
+
+GlyphsApp.GSLayer.selectedNodeSet = selectedNodeSet
 
 # Does p have rotational symmetry?
 #   ox, oy = p.layerCenter()
