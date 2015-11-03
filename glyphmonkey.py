@@ -3,7 +3,7 @@
 __doc__=""
 import GlyphsApp
 from GlyphsApp import Proxy
-from math import atan2, sqrt, cos, sin, radians
+from math import atan2, sqrt, cos, sin, radians, degrees
 from Foundation import NSMakePoint, NSValue, NSMakeRect
 
 # Make GSNodes hashable
@@ -52,7 +52,7 @@ class GSLineSegment(object):
   def angle(self):
     e = self.end
     s = self.start
-    return atan2(e.y - s.y, e.x - s.x)
+    return degrees(atan2(e.y - s.y, e.x - s.x))
 
   @property
   def selected(self):
@@ -82,10 +82,10 @@ class GSCurveSegment(GSLineSegment):
     xd, yd = self.end.x, self.end.y/20
     return (xb-xa)*(10*ya + 6*yb + 3*yc +   yd) + (xc-xb)*( 4*ya + 6*yb + 6*yc +  4*yd) +(xd-xc)*(  ya + 3*yb + 6*yc + 10*yd)
 
-  def angle(self):
+  def angle(self): # XXX This is wrong
     e = self.end
     s = self.start
-    return atan2(e.y - s.y, e.x - s.x)
+    return degrees(atan2(e.y - s.y, e.x - s.x))
 
   def interpolate_at_fraction(self, t):
     if t < 0 or t > 1:
