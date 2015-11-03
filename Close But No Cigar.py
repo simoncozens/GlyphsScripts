@@ -4,17 +4,11 @@ __doc__="""
 Report on angles, widths and positions which are nearly, but not quite, right
 """
 
-haveSomeStems = False
-for master in Glyphs.font.masters:
-  if len(master.verticalStems) > 0 or len(master.horizontalStems) > 0:
-    haveSomeStems = True
-    break
-
 within = 0.05 # 5% of target
 angleTolerance = 2
 # Check stems and angles
 
-dodgy = []
+Glyphs.clearLog()
 
 from glyphmonkey import GSLineSegment
 
