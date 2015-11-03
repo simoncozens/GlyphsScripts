@@ -67,10 +67,12 @@ l=Glyphs.font.selectedLayers[0]
 m = Glyphs.font.masters[l.associatedMasterId]
 v = m.verticalStems
 h = m.horizontalStems
+glyph = l.parent
 for p in l.paths:
   for s in p.segments:
     thisAng = s.angle
     checkAngle(glyph, s)
     checkHorizontal(glyph, s, h)
+    checkVertical(glyph, s, v)
   for n in p.nodes:
     checkNodePosition(glyph,n,m)
