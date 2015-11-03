@@ -73,7 +73,9 @@ for p in l.paths:
   for s in p.segments:
     thisAng = s.angle
     checkAngle(glyph, s)
-    checkHorizontal(glyph, s, h)
-    checkVertical(glyph, s, v)
+    if h and len(h) > 0:
+      checkHorizontal(glyph, s, h)
+    if v and len(v) > 0:
+      checkVertical(glyph, s, v)
   for n in p.nodes:
     checkNodePosition(glyph,n,m)
