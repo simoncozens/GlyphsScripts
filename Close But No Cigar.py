@@ -27,6 +27,7 @@ def checkHorizontal(glyph, s, h):
         print("\nSegment %s in %s, has length %s, should be horizontal stem length %s?" % (s, glyph, thisLen, stem))
 
 def checkVertical(glyph, s,v):
+  thisAng = s.angle
   thisLen = s.length
   if (90-angleTolerance < thisAng and thisAng < 90+angleTolerance) or (-90-angleTolerance < thisAng and thisAng < -90+angleTolerance):
     for stem in v:
@@ -45,7 +46,7 @@ def checkAngle(glyph, s):
     print("\nNearly-perpendicular %s in %s, angle was %s, should be vertical?" % (s, glyph, thisAng))
 
   if (thisAng != -90 and (-90-angleTolerance < thisAng and thisAng < -90+angleTolerance)):
-    print("\nNearly-perpendicular %s in %s, angle was %s, should be horizontal?" % (s, glyph, thisAng))
+    print("\nNearly-perpendicular %s in %s, angle was %s, should be vertical?" % (s, glyph, thisAng))
 
 def checkNodePosition(glyph, node, m):
   px, py = node.position.x, node.position.y
