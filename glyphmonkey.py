@@ -6,6 +6,8 @@ from GlyphsApp import Proxy
 from math import atan2, sqrt, cos, sin, radians
 from Foundation import NSMakePoint, NSValue, NSMakeRect
 
+# Make GSNodes hashable
+
 class GSLineSegment(object):
   def __init__(self, tuple = None, owner = None, idx = 0):
     self._seg = tuple
