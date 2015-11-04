@@ -21,6 +21,9 @@ def closeButNotAbsolute(l1, l2, tolerance):
 def checkHorizontal(layer, s, h):
   thisLen = s.length
   thisAng = s.angle
+  for stem in h:
+    if thisLen == stem: return
+
   if (-angleTolerance < thisAng and thisAng < angleTolerance) or (180-angleTolerance < thisAng and thisAng < 180+angleTolerance):
     for stem in h:
       if closeButNotRelative(thisLen, stem, within):
@@ -29,6 +32,9 @@ def checkHorizontal(layer, s, h):
 def checkVertical(layer, s,v):
   thisAng = s.angle
   thisLen = s.length
+  for stem in v:
+    if thisLen == stem: return
+
   if (90-angleTolerance < thisAng and thisAng < 90+angleTolerance) or (-90-angleTolerance < thisAng and thisAng < -90+angleTolerance):
     for stem in v:
       if closeButNotRelative(thisLen, stem, within):
