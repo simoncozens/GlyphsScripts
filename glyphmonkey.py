@@ -58,6 +58,23 @@ class GSLineSegment(object):
   def selected(self):
     return self.start.selected and self.end.selected
 
+  def reverse(self):
+    self._seg = self._seg[::-1]
+
+  def _interpolatenspoint(self, p1, p2, t):
+    dx = (p2.x - p1.x) * t
+    dy = (p2.y - p1.y) * t
+    return NSMakePoint(p1.x + dx, p1.y + dy)
+
+  def interpolate(self, other, t):
+    if type(other) != type(self): raise TypeError
+    l = []
+    for i in range(0, len(self)):
+      newnode = self._seg[i].copy() # Urgh
+      newnode.position = self._interpolatenspoint(self._seg[i].position, other._seg[i].position, t)
+      l.append(newnode)
+    return type(self)(l)
+
   def __len__(self):
     return 2
 
@@ -154,6 +171,8 @@ GSNode = GlyphsApp.GSNode
 
 def toNodeList(segments):
   nodelist = []
+  closed = (segments[-1].end.x == segments[0].start.x and segments[-1].end.y == segments[0].start.y)
+  nodelist.append( GSNode((segments[0].start.x, segments[0].start.y), GlyphsApp.GSLINE) )
   for i in range(0,len(segments)):
     s = segments[i]
     t = GlyphsApp.GSCURVE
@@ -174,6 +193,9 @@ def toNodeList(segments):
     node = GSNode((e.x, e.y), t)
     node.connection = c
     nodelist.append(node)
+
+  n = segments[0].start
+
   return nodelist
 
 GlyphsApp.GSPath.segments =  property( lambda self: PathSegmentsProxy(self),
@@ -196,8 +218,16 @@ def nodeReflect(self, p0, p1):
   y = b * (self.position.x - p0.x) - a * (self.position.y - p0.y) + p0.y
   self.position =(round(x,2), round(y,2))
 
+def nodeInterpolate(self, other, t):
+  dx = (other.position.x - self.position.x) * t
+  dy = (other.position.y - self.position.y) * t
+  new = self.copy()
+  new.position = (self.position.x + dx, self.position.y + dy)
+  return new
+
 GlyphsApp.GSNode.rotate = nodeRotate
 GlyphsApp.GSNode.reflect = nodeReflect
+GlyphsApp.GSNode.interpolate = nodeInterpolate
 
 ### additional GSPath methods
 
