@@ -92,6 +92,7 @@ class GSCurveSegment(GSLineSegment):
   @property
   def handle2(self): return self._seg[2].position
 
+  @property
   def area(self):
     xa, ya = self.start.x, self.start.y/20
     xb, yb = self.handle1.x, self.handle1.y/20
