@@ -25,6 +25,7 @@ for a in Glyphs.font.selectedLayers[0].paths:
       l2 = s.length
 
   if s1 > s2: s1, s2 = s2, s1
+  print("Identified path end segments:")
   print(a.segments[s1], a.segments[s2])
   # Find two edges between segments
   edge1 = [ a.segments[i] for i in range(s1+1, s2) ]
@@ -32,9 +33,13 @@ for a in Glyphs.font.selectedLayers[0].paths:
   edge2.extend([a.segments[i] for i in range(0, s1)])
   for i in range(0, len(edge2)): edge2[i].reverse()
   edge2.reverse()
-
-  print(edge1, edge2)
-  stripes = [ [0, 0.1], [0.2,0.3], [0.4,0.6], [0.7,0.8],[0.9,1] ]
+  print("\nIdentified edges")
+  print("Edge 1:", edge1)
+  print("Edge 2:", edge2)
+  if len(edge1) != len(edge2):
+    print("Edges not compatible - differing number of points")
+    raise TypeError
+  stripes = [ [0, 0.05], [0.1,0.15], [0.2,0.3], [0.35,0.6], [0.65,0.75],[0.8,0.85],[0.95, 1] ]
   for i in stripes:
     start, end = i[0],i[1]
 
