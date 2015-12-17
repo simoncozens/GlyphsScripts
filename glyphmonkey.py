@@ -230,13 +230,50 @@ GlyphsApp.GSNode.rotate = nodeRotate
 GlyphsApp.GSNode.reflect = nodeReflect
 GlyphsApp.GSNode.interpolate = nodeInterpolate
 
-### additional GSPath methods
-
-def layerCenter(self):
-  bounds = self.parent.bounds
+def _layerCenter(self):
+  bounds = self.bounds
   ox = bounds.origin.x + bounds.size.width / 2
   oy = bounds.origin.y + bounds.size.height / 2
   return NSMakePoint(ox, oy)
+GlyphsApp.GSLayer.center = _layerCenter
+
+def horizontalCenterOfWeight(self):
+  sampleX = self.bounds.origin.x
+  sampleHeight = 5
+  stripAreas = []
+  totalArea = 0
+  p = self.bezierPath()
+
+  # This is slow and stupid but it works
+  while sampleX < self.bounds.origin.x + self.bounds.size.width:
+    sampleY = self.bounds.origin.y
+    thisArea = 0
+    while sampleY < self.bounds.origin.y + self.bounds.size.height:
+      if p.containsPoint_([sampleX, sampleY]):
+        thisArea = thisArea + 1
+      sampleY = sampleY + sampleHeight
+    stripAreas.append(thisArea)
+    totalArea = totalArea + thisArea
+    sampleX = sampleX + 1
+
+  area = 0
+  for i, v in enumerate(stripAreas):
+    area = area + v
+    if area > totalArea /2 :
+      return i
+
+GlyphsApp.GSLayer.horizontalCenterOfWeight = horizontalCenterOfWeight
+
+def horizontalOpticalCenter(self):
+  cw = self.horizontalCenterOfWeight()
+  tc = self.center()[0]
+  return tc + (cw-tc) / 3 # This is an approximation, obviously...
+GlyphsApp.GSLayer.horizontalOpticalCenter = horizontalOpticalCenter
+
+### additional GSPath methods
+
+def layerCenter(self):
+  return self.parent.center()
 
 def pathCenter(self):
   bounds = self.bounds
