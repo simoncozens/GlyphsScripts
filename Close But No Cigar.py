@@ -70,8 +70,9 @@ def checkNodePosition(layer, node, m):
   if closeButNotAbsolute(py,m.descender,2):
     print("\nY co-ordinate of %s in %s nearly (but not quite) descender" % (node, layer))
 
-glyph = Glyphs.font.selectedLayers[0].parent
-for l in glyph.layers:
+for l1 in Glyphs.font.selectedLayers:
+  glyph = l1.parent
+  l = glyph.layers[0]
   m = Glyphs.font.masters[l.associatedMasterId]
   v = m.verticalStems
   h = m.horizontalStems
