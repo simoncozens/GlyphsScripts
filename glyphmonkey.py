@@ -182,9 +182,9 @@ def toNodeList(segments):
       t = GlyphsApp.GSLINE
     else:
       s1 = s.handle1
-      nodelist.append(GSNode((s1.x,s1.y), GlyphsApp.GSOFFCURVE))
+      nodelist.append(GSNode((s1.x,s1.y), type = GlyphsApp.GSOFFCURVE))
       s2 = s.handle2
-      nodelist.append(GSNode((s2.x,s2.y), GlyphsApp.GSOFFCURVE))
+      nodelist.append(GSNode((s2.x,s2.y), type = GlyphsApp.GSOFFCURVE))
 
     ns = i+1
     if ns >= len(segments): ns = 0
