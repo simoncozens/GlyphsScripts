@@ -207,8 +207,8 @@ sansomatic["N"] = {
 
 def O(controls):
   width = getControl(controls, "Width")
-  stem = getDimension("HV")
-  crossbar = getDimension("HH")
+  stem = getDimension("OV")
+  crossbar = getDimension("OH")
   htension = getControl(controls,"H Tension")
   vtension = getControl(controls,"V Tension")
   overshoot = getControl(controls,"Overshoot")
