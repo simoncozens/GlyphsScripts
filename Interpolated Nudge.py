@@ -40,25 +40,28 @@ class InterpolatedNudgeWindow( object ):
     if diffY != 0:
       adjY = ((node.position.y-handle.position.y)/diffY) * dy
 
-    handle.position = (handle.position.x + adjX, handle.position.y + adjY)
+    if handle.type == OFFCURVE:
+      handle.position = (handle.position.x + adjX, handle.position.y + adjY)
 
   def nudge(self, n, deltax, deltay):
     nn = self.nextOnCurve(n)
     pn = self.prevOnCurve(n)
 
-    if nn.type == CURVE:
-      diffX, diffY = nn.position.x - n.position.x, nn.position.y - n.position.y
+    diffX, diffY = nn.position.x - n.position.x, nn.position.y - n.position.y
+    if nn != n.nextNode:
       self.adjust(nn.prevNode, nn, diffX, diffY, deltax, deltay)
       self.adjust(nn.nextNode, nn, diffX, diffY, deltax, deltay)
 
-    if pn.type == CURVE:
-      diffX, diffY = pn.position.x - n.position.x, pn.position.y - n.position.y
+    diffX, diffY = pn.position.x - n.position.x, pn.position.y - n.position.y
+    if pn != n.prevNode:
       self.adjust(pn.prevNode, pn, diffX, diffY, deltax, deltay)
       self.adjust(pn.nextNode, pn, diffX, diffY, deltax, deltay)
 
     n.position = (n.position.x + deltax, n.position.y + deltay)
-    n.prevNode.position = (n.prevNode.position.x + deltax, n.prevNode.position.y + deltay)
-    n.nextNode.position = (n.nextNode.position.x + deltax, n.nextNode.position.y + deltay)
+    if n.prevNode.type == OFFCURVE:
+      n.prevNode.position = (n.prevNode.position.x + deltax, n.prevNode.position.y + deltay)
+    if n.nextNode.type == OFFCURVE:
+      n.nextNode.position = (n.nextNode.position.x + deltax, n.nextNode.position.y + deltay)
 
   def up(self,sender):
     try:
@@ -81,8 +84,7 @@ class InterpolatedNudgeWindow( object ):
 
   def doIt(self, dx, dy):
     for n in Glyphs.font.selectedLayers[0].selection:
-      if n.type == CURVE and n.smooth:
-        self.nudge(n,dx,dy)
+      self.nudge(n,dx,dy)
     Glyphs.redraw()
 
 InterpolatedNudgeWindow()
