@@ -149,7 +149,7 @@ class Autokern():
     self.w.text_anchorL.set("Enumerating kern pairs (this will take a while)...")
     count = 0
     # Split into batches...
-    batch_size = 256
+    batch_size = 1024
     indices = np.arange(total)
     batches = total / batch_size
     self.w.progressBar.set( 100 * count / total )
@@ -319,7 +319,7 @@ class ClusterKernWindow( object ):
     for g in groups:
       if len(g) > 1:
         lText += ", ".join(g) + "\n\n"
-        g.append("@MMK_R_%s" % g[0]) # right side of glyph used when left member of pair
+        g.append(g[0])
     lText += "Total groups and ungrouped characters: %i" % len(groups)
     self.lgroups = groups
     self.w.resultsL.set(lText)
@@ -336,7 +336,7 @@ class ClusterKernWindow( object ):
     for g in groups:
       if len(g) > 1:
         rText += ", ".join(g) + "\n\n"
-        g.append("@MMK_L_%s" % g[0]) # left side of glyph used when right member of pair
+        g.append(g[0])
 
     rText += "Total groups and ungrouped characters: %i" % len(groups)
     self.w.resultsR.set(rText)
