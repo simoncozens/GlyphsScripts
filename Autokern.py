@@ -32,6 +32,13 @@ try:
 except Exception, e:
     failed.append("keras")
 
+testLetters = []
+
+# Uncomment this to limit to a subset
+# testLetters = ["H","T", "Tcedilla", "o", "a", "period","A","V"]
+
+batch_size = 1024
+
 windowHeight = 450
 windowWidth = 720
 samples = 100
@@ -130,6 +137,14 @@ class Autokern():
         low = int(30 * scale); high = int(50 * scale)
       return int((low+high)/10)*5
     count = 0
+
+    if len(testLetters) > 0:
+      self.rgroups = []
+      self.lgroups = []
+      for l in testLetters:
+        self.rgroups.append([l])
+        self.lgroups.append([l])
+
     total = len(self.rgroups)*len(self.lgroups)
     for r in self.rgroups:
       for l in self.lgroups:
@@ -149,7 +164,6 @@ class Autokern():
     self.w.text_anchorL.set("Enumerating kern pairs (this will take a while)...")
     count = 0
     # Split into batches...
-    batch_size = 1024
     indices = np.arange(total)
     batches = total / batch_size
     self.w.progressBar.set( 100 * count / total )
@@ -165,6 +179,8 @@ class Autokern():
       classes = np.argmax(predictions, axis=1)
       for pair, prediction in zip(batch_tensors["pair"],classes):
         units = bin_to_label(prediction,mwidth)
+        if len(testLetters) > 0:
+          print(pair[0],pair[1],units)
         if units != 0:
           total_pairs = total_pairs + 1
           Glyphs.font.setKerningForPair(masterID, pair[0], pair[1], units)
@@ -179,7 +195,7 @@ class Autokern():
     print("Loading model")
     self.w.text_anchorL.set("Loading model...")
     weight_matrix = []
-    self.model = keras.models.load_model(filename, custom_objects={'w_categorical_crossentropy': WeightedCategoricalCrossEntropy(weight_matrix)})
+    self.model = keras.models.load_model(filename, custom_objects={'w_categorical_crossentropy': WeightedCategoricalCrossEntropy(weight_matrix)}, compile=False)
     self.w.text_anchorL.set("Model loaded. Let's do this. (Close the Kerning window before hitting the button.)")
 
 class ModelDownloader():
@@ -294,6 +310,9 @@ class ClusterKernWindow( object ):
       self.glyphOrder = []
       glyphSet = Glyphs.font.glyphs
       for a in glyphSet:
+        if len(testLetters) > 0:
+          if not a.name in testLetters:
+            continue
         self.glyphOrder.append(a)
         l = a.layers[masterID]
         c = c + 1
