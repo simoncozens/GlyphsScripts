@@ -6,8 +6,14 @@ Autokerner!
 
 import vanilla
 import math
-import os
 import itertools
+
+import os
+pathname = os.path.dirname(os.path.realpath(__file__))
+os.chdir(pathname)
+sys.path.insert(0,pathname+"/extra_python_libs")
+
+from Foundation import NSMinX, NSMakePoint
 
 failed = []
 try:
