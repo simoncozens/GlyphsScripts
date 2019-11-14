@@ -11,6 +11,7 @@ def checkALayer(aLayer):
   pathCounts = []
   anchors = []
   paths = []
+  components = []
   for idx, thisLayer in enumerate(aLayer.parent.layers):
     pcount = len(thisLayer.paths)
     if idx > 0:
@@ -56,6 +57,21 @@ def checkALayer(aLayer):
           "prevItem": ", ".join(anchors[-1])
         })
     anchors.append(thisAnchors)
+
+    thisComponents = set()
+    for item in thisLayer.components:
+      thisComponents.add(item.name)
+
+    if len(components) > 0:
+      diffComp = thisComponents.symmetric_difference(components[-1])
+      if len(diffComp) > 0:
+        differences.append({"type": "components",
+          "prevLayer": Font.selectedLayers[0].parent.layers[idx-1].name,
+          "thisLayer": thisLayer.name,
+          "thisItem": ", ".join(thisComponents),
+          "prevItem": ", ".join(components[-1])
+        })
+    components.append(thisComponents)
 
   if len(differences) == 0:
     print(thisLayer.parent.name + " is compatible")
