@@ -9,7 +9,12 @@ from Foundation import NSPoint, NSValue
 def lerp(t,a,b):
   return NSValue.valueWithPoint_(NSPoint(int((1-t)*a.x + t*b.x), int((1-t)*a.y + t*b.y)))
 
-for p in Glyphs.font.selectedLayers[0].paths:
+Layer = Glyphs.font.selectedLayers[0]
+testSelection = len(Layer.selection) > 0
+
+for p in Layer.paths:
+  if testSelection and not p.selected:
+    continue
   news = []
   for idx,segment in enumerate(p.segments):
     if len(segment) == 4:
