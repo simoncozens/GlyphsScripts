@@ -10,8 +10,12 @@ import itertools
 
 import os
 pathname = os.path.dirname(os.path.realpath(__file__))
+extralibs = pathname+"/extra_python_libs/"
 os.chdir(pathname)
-sys.path.insert(0,pathname+"/extra_python_libs")
+print(pathname)
+sys.path.insert(0,extralibs)
+print(sys.path)
+import np_utils
 
 from Foundation import NSMinX, NSMakePoint
 
@@ -36,7 +40,7 @@ try:
     import keras
     from keras import backend as K
 except Exception, e:
-    failed.append("keras")
+    failed.append("keras", "np_utils")
 
 testLetters = []
 
@@ -79,15 +83,44 @@ class Autokern():
     self.lgroups = lgroups
     self.rgroups = rgroups
     self.sideBearings = sideBearings
-    self.w = vanilla.FloatingWindow( (windowWidth, 130), "Autokerning")
+    self.w = vanilla.FloatingWindow( (windowWidth, 160), "Autokerning")
     self.w.text_anchorL = vanilla.TextBox( (10, 10, windowWidth - 10, 25), "", "center")
-    self.w.progressBar = vanilla.ProgressBar( (10, 50, windowWidth-20, 10))
+    self.w.justLowerCheck = vanilla.CheckBox( (60, 35, 100, 20), "a-z", callback = self.justLowerCallback)
+    self.w.justUpperCheck = vanilla.CheckBox( (160, 35, 100, 20), "A-Z", callback = self.justLowerCallback)
+    self.w.allPairsCheck = vanilla.CheckBox( (260, 35, 100, 20), "All pairs", callback = self.allPairsCallback, value=True)
+    self.w.progressBar = vanilla.ProgressBar( (10, 70, windowWidth-20, 10))
     self.w.proceed = vanilla.Button( (windowWidth/2 -50, -50, 100,20), "Kern!", callback = self.kern)
     self.w.open()
 
+  def allPairsCallback(self,sender):
+    global testLetters
+    if sender.get():
+      testLetters = []
+      self.w.justLowerCheck.set(False)
+      self.w.justLowerCheck.enable(False)
+      self.w.justUpperCheck.set(False)
+      self.w.justUpperCheck.enable(False)
+    else:
+      self.w.justLowerCheck.enable(True)
+      self.w.justUpperCheck.enable(True)
+    print(testLetters)
+
+  def justLowerCallback(self,sender):
+    global testLetters
+    testLetters = []
+    if self.w.justLowerCheck.get():
+      testLetters.extend("abcdefghijklmnopqrstuvwxyz") # .extend is a trick here
+    if self.w.justUpperCheck.get():
+      testLetters.extend("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    if len(testLetters) > 1:
+      self.w.allPairsCheck.set(False)
+    else:
+      self.w.allPairsCheck.set(True)
+    print(testLetters)
+
   def kern(self,sender):
     self.w.text_anchorL.set("Gathering input tensors...")
-    input_tensors = { "pair": [], "rightofl": [], "leftofr": [], "leftofl": [], "rightofr": [], "rightofo": [], "leftofH": [] }
+    input_tensors = { "pair": [], "rightofl": [], "leftofr": [], "leftofl": [], "rightofr": [], "rightofo": [], "rightofH": [] }
 
     masterID = Glyphs.font.selectedLayers[0].associatedMasterId
     mwidth = Glyphs.font.glyphs["m"].layers[masterID].width
@@ -164,7 +197,7 @@ class Autokern():
         input_tensors["rightofr"].append(rightcontour(right))
         input_tensors["leftofl"].append(leftcontour(left))
         input_tensors["rightofo"].append(rightcontour("o"))
-        input_tensors["leftofH"].append(leftcontour("H"))
+        input_tensors["rightofH"].append(rightcontour("H"))
         count = count + 1
         self.w.progressBar.set( 100 * count / total )
     self.w.text_anchorL.set("Enumerating kern pairs (this will take a while)...")
@@ -436,6 +469,12 @@ if len(failed)>0:
     w = vanilla.FloatingWindow( (windowWidth, windowHeight), "Install Required Modules")
     w.text_anchorL = vanilla.TextBox( (10, 10, windowWidth - 10, 15), "The following Python modules need to be installed before this script can run:", "center", sizeStyle='small')
     w.text_anchorR = vanilla.TextBox( (10, 30, windowWidth - 10, 15), ", ".join(failed))
+    w.instructions = vanilla.TextBox( (10, 50, - 10, -15), "")
+    instructions = []
+    if not os.path.exists(extralibs):
+      instructions.append("Create the directory "+extralibs)
+    instructions.append("pip install numpy keras tensorflow np_utils -t '"+extralibs+"'")
+    w.instructions.set("\n".join(instructions))
     def closeW(_):
       w.close()
     w.button = vanilla.Button( (windowWidth/2 - 50, -50, 100,20), "OK", callback = closeW)

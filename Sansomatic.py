@@ -282,7 +282,7 @@ sansomatic["O"] = {
 }
 
 def S(controls):
-  capHeight = master.capHeight
+  #capHeight = master.capHeight
 
   topwidth = getControl(controls, "Top Width")
   bottomwidth = getControl(controls, "Bottom Width")
@@ -392,7 +392,7 @@ sansomatic["S"] = {
     'Bar Slope': { 'type': "Slider", 'min': 0, 'max':0.5, 'default': 0.2 },
     'Bar Height': { 'type': "Slider", 'min': 0.5, 'max':0.7, 'default': 0.55 },
     'Bar Thickness': { 'type': "Slider", 'min': 0, 'max':300, 'default': 120 },
-    'Hairline Thickness': { 'type': "Slider", 'min': 0, 'max':100, 'default': 20 }
+    'Hairline Thickness': { 'type': "Slider", 'min': 0, 'max':300, 'default': 20 }
 
   },
   'method': S
