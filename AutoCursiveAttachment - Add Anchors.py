@@ -139,7 +139,7 @@ def doTrial(anchor, x):
     #     tt = - tt
     score = (distance - targetDistance)**2
     print("Square distance diff", score)
-    tangentScore = 10
+    tangentScore = 5
     print("Top tangent was: ", tt)
     print("Expected top tangent was: ", Layer.master.customParameters["autocursiveattachment_topTangent"])
     print("Bottom tangent was: ", bt)
@@ -152,7 +152,7 @@ def doTrial(anchor, x):
     #     score = score + x**2
     # else:
     #     score = score + (Layer.width-x)**2
-    placement = NSMakePoint(x, prop * result[0].y + (1-prop) * (result[1].y))
+    placement = NSMakePoint(x, prop * result[1].y + (1-prop) * (result[0].y))
     return score, placement
 
 
