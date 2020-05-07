@@ -6,6 +6,7 @@ Add regular guidelines according to LeMo cadencing method.
 
 import vanilla
 windowHeight = 70
+from Foundation import NSPoint
 
 class CadenceGrid( object ):
   def __init__( self ):
@@ -31,7 +32,10 @@ class CadenceGrid( object ):
         del(FontMaster.guides[0])
 
       while x < 1000:
-        g = GSGuideLine()
+        try: # GLYPHS 3
+          g = GSGuide()
+        except:
+          g = GSGuideLine()
         g.position = NSPoint(x,0)
         g.angle = 90.0
         FontMaster.guides.append(g)
