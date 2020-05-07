@@ -14,5 +14,6 @@ layers = Glyphs.font.selectedLayers
 for aLayer in layers:
   for idx, thisLayer in enumerate(aLayer.parent.layers):
     for p in thisLayer.paths:
-      n = sorted(sorted(list(p.nodes), key = bottom),key=left)[0]
+      oncurves = filter(lambda n: n.type != "offcurve", list(p.nodes))
+      n = sorted(sorted(oncurves, key = bottom),key=left)[0]
       n.makeNodeFirst()
