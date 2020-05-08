@@ -74,8 +74,13 @@ for l1 in Glyphs.font.selectedLayers:
   glyph = l1.parent
   l = glyph.layers[0]
   m = Glyphs.font.masters[l.associatedMasterId]
-  v = m.verticalStems
-  h = m.horizontalStems
+  try: # GLYPHS3
+    stems = m.stems
+    h = [x.value() for x in filter(lambda x:x.metric().horizontal(), stems)]
+    v = [x.value() for x in filter(lambda x:not x.metric().horizontal(), stems)]
+  except Exception as e:
+    v = m.verticalStems
+    h = m.horizontalStems
   for p in l.paths:
     for s in p.segments:
       thisAng = s.angle
