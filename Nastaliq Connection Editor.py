@@ -12,6 +12,7 @@ import csv
 from io import StringIO
 import re
 from AppKit import NSView, NSColor, NSRectFill
+from vanilla.vanillaBase import VanillaBaseObject, VanillaCallbackWrapper
 import traceback
 
 
@@ -99,7 +100,7 @@ class NastaliqEditor(object):
             editCallback=self.editCallback,
             menuCallback=self.menuCallback,
         )
-        self.w.myList._clickTarget = vanilla.vanillaBase.VanillaCallbackWrapper(
+        self.w.myList._clickTarget = VanillaCallbackWrapper(
             self.clickCallback
         )
         self.w.myList._tableView.setTarget_(self.w.myList._clickTarget)
