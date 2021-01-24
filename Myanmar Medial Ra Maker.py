@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import GlyphsApp
 import numpy as np
+import re
+
 
 number_of_glyphs = 5
 
@@ -172,16 +174,16 @@ def make_a_ra(basename, width):
     l = g.layers[0]
     extension = width-ra_enclosure
     l.paths.append(stem)
-    if not (basename.endswith(".notop")):
+    if not (re.search(r"\b.notop\b",basename)):
         l.paths.append(copypath(top, stretchright=extension/2))
-    if not (basename.endswith(".notophook")) and not (basename.endswith(".notop")):
+    if not (re.search(r"\b.notophook\b",basename) or re.search(r"\b.notop\b",basename)):
         l.paths.append(copypath(upper_hook, stretchleft=extension/2,translate=extension))
-    if not (basename.endswith(".nobottom")):
+    if not (re.search(r"\b.nobottom\b",basename)):
         l.paths.append(copypath(bottom, stretchright=extension/2))
-    if not basename.endswith(".nobottomhook") and not (basename.endswith(".nobottom")):
+    if not (re.search(r"\b.nobottomhook\b",basename) or re.search(r"\b.nobottom\b",basename)):
         l.paths.append(copypath(lower_hook, stretchleft=extension/2,translate=extension))
+    l.width = ra.width
     l.LSB = ra.LSB
-    l.RSB = ra.RSB - extension
 
 for width in target_widths:
     if width <= ra_enclosure:
@@ -193,9 +195,17 @@ for width in target_widths:
     make_a_ra(basename+".notophook", width)
     make_a_ra(basename+".nobottom", width)
     make_a_ra(basename+".nobottomhook", width)
+    make_a_ra(basename+".notop.nobottom", width)
+    make_a_ra(basename+".notophook.nobottom", width)
+    make_a_ra(basename+".notop.nobottomhook", width)
+    make_a_ra(basename+".notophook.nobottomhook", width)
 
 make_a_ra("medial-ra.notop", ra_enclosure)
 make_a_ra("medial-ra.notophook", ra_enclosure)
 make_a_ra("medial-ra.nobottom", ra_enclosure)
 make_a_ra("medial-ra.nobottomhook", ra_enclosure)
+make_a_ra("medial-ra.notop.nobottom", width)
+make_a_ra("medial-ra.notophook.nobottom", width)
+make_a_ra("medial-ra.notop.nobottomhook", width)
+make_a_ra("medial-ra.notophook.nobottomhook", width)
 
