@@ -123,7 +123,7 @@ class NastaliqEditor(object):
             return
         crow, ccol = self.w.myList.getEditedColumnAndRow()
         newdata = self.w.myList[crow - 1][self.connections["colnames"][ccol + 1]]
-        self.setNewPair(crow - 1, ccol + 1, newdata)
+        self.setNewPair(crow - 1, ccol + 1, int(newdata))
         sys.stdout.flush()
 
     def clickCallback(self, sender):
@@ -144,16 +144,26 @@ class NastaliqEditor(object):
             return
         crow, ccol = self.selectedPair
         colname = self.connections["colnames"][ccol]
-        data = int(self.connections["rows"][crow][colname]) + increment
-        if Glyphs.font.glyphs[colname + str(data)]:
-            self.inAdd = True
-            self.setNewPair(crow, ccol, data)
-            newdict = self.w.myList[crow]
-            newdict[colname] = data
-            self.w.myList[crow] = newdict
-            self.inAdd = False
-        else:
-            print("No glyph", colname + str(data))
+        availableAlternates = [ str(g.name) for g in Glyphs.font.glyphs if str(g.name).startswith(colname) ]
+        currentAlternate = colname+str(self.connections["rows"][crow][colname])
+        if not currentAlternate in availableAlternates:
+            # Weirdness
+            return
+
+        # Add +increment
+        index = availableAlternates.index(currentAlternate)
+        print(availableAlternates, currentAlternate)
+        if index == 0 and increment == -1: return
+        if index == len(availableAlternates)-1 and increment == 1: return
+        newGlyph = availableAlternates[index + increment]
+        data = newGlyph[len(colname):]
+        print(data)
+        self.inAdd = True
+        self.setNewPair(crow, ccol, data)
+        newdict = self.w.myList[crow]
+        newdict[colname] = data
+        self.w.myList[crow] = newdict
+        self.inAdd = False
 
     def setNewPair(self, crow, ccol, newdata=None):
         left = self.connections["rows"][crow]["Left Glyph"]
