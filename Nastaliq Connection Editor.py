@@ -121,9 +121,11 @@ class NastaliqEditor(object):
     def editCallback(self, sender):
         if self.inAdd:
             return
-        crow, ccol = self.w.myList.getEditedColumnAndRow()
-        newdata = self.w.myList[crow - 1][self.connections["colnames"][ccol + 1]]
-        self.setNewPair(crow - 1, ccol + 1, int(newdata))
+        ccol, crow = self.w.myList.getEditedColumnAndRow()
+        print("Col was ", crow, ccol)
+        newdata = self.w.myList[crow][self.connections["colnames"][ccol]]
+        print("New data was ", newdata)
+        self.setNewPair(crow, ccol, newdata)
         sys.stdout.flush()
 
     def clickCallback(self, sender):
@@ -246,13 +248,13 @@ def kickoff():
         return
 
     connectables = [
-        x.name for x in Glyphs.font.glyphs if re.match(r".*[mif][0-9]+$", x.name)
+        x.name for x in Glyphs.font.glyphs if re.match(r".*[mif](sd)?[0-9]+$", x.name)
     ]
-    medials = [x for x in connectables if re.match(r".*m[0-9]+$", x)]
-    initials = [x for x in connectables if re.match(r".*i[0-9]+$", x)]
-    finals = [x for x in connectables if re.match(r".*f[0-9]+$", x)]
-    medialstems = sorted(set([re.sub("[0-9]+$", "", x) for x in medials]))
-    initialstems = sorted(set([re.sub("[0-9]+$", "", x) for x in initials]))
+    medials = [x for x in connectables if re.match(r".*m(sd)?[0-9]+$", x)]
+    initials = [x for x in connectables if re.match(r".*i(sd)?[0-9]+$", x)]
+    finals = [x for x in connectables if re.match(r".*f(sd)?[0-9]+$", x)]
+    medialstems = sorted(set([re.sub("(sd)?[0-9]+$", "", x) for x in medials]))
+    initialstems = sorted(set([re.sub("(sd)?[0-9]+$", "", x) for x in initials]))
 
     if len(medials) == 0:
         Message(
