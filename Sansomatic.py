@@ -562,4 +562,4 @@ def rebuild():
     print("Don't know how to draw a "+glyph.string)
 
 rebuild()
-NSNotificationCenter.defaultCenter.addObserver_selector_name_object(None, rebuild, "GSUpdateInterface", None)
+NSNotificationCenter.defaultCenter.addObserver_selector_name_object_(None, rebuild, "GSUpdateInterface", None)
