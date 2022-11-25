@@ -6,12 +6,11 @@ convention
 """
 import sys
 from AppKit import NSObject
-from PyObjCTools import AppHelper
 import vanilla
 import csv
 from io import StringIO
 import re
-from AppKit import NSView, NSColor, NSRectFill
+from AppKit import NSView, NSColor, NSRectFill, NSBezierPath, NSAffineTransform
 from vanilla.vanillaBase import VanillaBaseObject, VanillaCallbackWrapper
 import traceback
 
@@ -26,8 +25,14 @@ def glyphsort(x):
 if "GlyphView" not in locals():
 
     class GlyphView(NSView):
+        @objc.python_method
         def setGlyphs(self, glyphs):
             self.glyphs = glyphs
+            self.setNeedsDisplay_(True)
+
+        @objc.python_method
+        def setMaster(self, master_id):
+            self.master = master_id
             self.setNeedsDisplay_(True)
 
         def drawRect_(self, rect):
@@ -39,10 +44,10 @@ if "GlyphView" not in locals():
                 xcursor = 0
                 ycursor = 0
                 for i, g in enumerate(self.glyphs):
-                    layer = g.layers[0]
+                    layer = g.layers[self.master]
                     if i > 0:
                         # Do anchor correction here
-                        prevlayer = self.glyphs[i - 1].layers[0]
+                        prevlayer = self.glyphs[i - 1].layers[self.master]
                         entry = prevlayer.anchors["entry"]
                         exit = layer.anchors["exit"]
                         if entry and exit:
@@ -63,7 +68,7 @@ if "GlyphView" not in locals():
 
                 t = NSAffineTransform.transform()
                 if xcursor > 0:
-                    master = self.glyphs[0].layers[0].master
+                    master = self.glyphs[0].layers[self.master].master
                     vscale = self.bounds().size.height / (
                         master.ascender - master.descender
                     )
@@ -84,7 +89,7 @@ class NastaliqEditor(object):
             for x in self.connections["colnames"]
         ]
         columns[0]["width"] = 100
-        self.w = vanilla.Window((950, 600), "Nastaliq Editor", closable=True)
+        self.w = vanilla.Window((1000, 1000), "Nastaliq Editor", closable=True)
         self.w.LeftLabel = vanilla.TextBox((-200, 10, 200, 17), "", alignment="center")
         self.w.LeftButton = vanilla.Button(
             (-200, 30, 30, 17), "<", callback=self.decrement
@@ -94,7 +99,7 @@ class NastaliqEditor(object):
             (-30, 30, 30, 17), ">", callback=self.increment
         )
         self.w.myList = vanilla.List(
-            (0, 0, -200, -0),
+            (0, 0, -300, -0),
             self.connections["rows"],
             columnDescriptions=columns,
             editCallback=self.editCallback,
@@ -112,11 +117,21 @@ class NastaliqEditor(object):
 
         self.glyphView = GlyphView.alloc().init()
         self.glyphView.glyphs = []
-        self.glyphView.setFrame_(((0, 0), (400, 400)))
-        self.w.scrollView = vanilla.ScrollView((-200, 50, 200, 400), self.glyphView)
+        self.glyphView.master = Glyphs.font.masters[0].id
+        self.glyphView.setFrame_(((0, 0), (600, 400)))
+        self.w.scrollView = vanilla.ScrollView((-280, 50, 300, 400), self.glyphView)
+
+        self.w.masterDropdown = vanilla.PopUpButton((-250, 500, -100, 20),
+            [x.name for x in Glyphs.font.masters],
+            callback=self.setMaster
+        )
         self.selectedPair = None
         self.inAdd = False
         self.w.open()
+
+    def setMaster(self, sender):
+        master_ix = sender.get()
+        self.glyphView.setMaster(Glyphs.font.masters[master_ix].id)
 
     def editCallback(self, sender):
         if self.inAdd:
@@ -136,10 +151,19 @@ class NastaliqEditor(object):
         self.setNewPair(crow, ccol)
 
     def decrement(self, sender):
-        self.add(-1)
+        try:
+            self.add(-1)
+        except Exception as e:
+            print("Oops!", sys.exc_info()[0], "occured.")
+            traceback.print_exc(file=sys.stdout)
 
     def increment(self, sender):
-        self.add(1)
+        try:
+            self.add(1)
+        except Exception as e:
+            print("Oops!", sys.exc_info()[0], "occured.")
+            traceback.print_exc(file=sys.stdout)
+
 
     def add(self, increment):
         if not self.selectedPair:
@@ -248,11 +272,11 @@ def kickoff():
         return
 
     connectables = [
-        x.name for x in Glyphs.font.glyphs if re.match(r".*[mif](sd)?[0-9]+$", x.name)
+        x.name for x in Glyphs.font.glyphs if re.match(r".*[mif](sd?)?[0-9]+$", x.name)
     ]
     medials = [x for x in connectables if re.match(r".*m(sd)?[0-9]+$", x)]
     initials = [x for x in connectables if re.match(r".*i(sd)?[0-9]+$", x)]
-    finals = [x for x in connectables if re.match(r".*f(sd)?[0-9]+$", x)]
+    finals = [x for x in connectables if re.match(r".*f(sd?)?[0-9]+$", x)]
     medialstems = sorted(set([re.sub("(sd)?[0-9]+$", "", x) for x in medials]))
     initialstems = sorted(set([re.sub("(sd)?[0-9]+$", "", x) for x in initials]))
 
