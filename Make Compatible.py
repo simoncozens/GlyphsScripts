@@ -39,7 +39,7 @@ for per_paths in zip(*paths):
     ):
         nodes = per_paths[line["master"]].nodes
         start_of_line = nodes[line["point_index"]]
-        end_of_line = nodes[line["point_index"] + 1 % len(nodes)]
+        end_of_line = nodes[(line["point_index"] + 1) % len(nodes)]
         new_offcurve_1 = GSNode(lerp(start_of_line, end_of_line, 1 / 3.0), GSOFFCURVE)
         new_offcurve_2 = GSNode(lerp(start_of_line, end_of_line, 2 / 3.0), GSOFFCURVE)
         nodelist = list(nodes)
